@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller as BaseController;
 
 class MenuController extends BaseController
 {
+    protected $menuItems = [];
     /*
     Requirements:
     - the eloquent expressions should result in EXACTLY one SQL query no matter the nesting level or the amount of menu items.
@@ -95,6 +96,22 @@ class MenuController extends BaseController
      */
 
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+        $menues = MenuItem::where('parent_id', null)->with('childMenus')->get();
+        foreach($menues as $menu) {
+            $this->menuItems[$menu->id] = $menu;
+            $this->__getMenueHeirarchy($menu->childMenus, $menu->id);
+        }
+        return $this->menuItems;
+        // throw new \Exception('implement in coding task 3');
     }
+
+
+
+    private function __getMenueHeirarchy($children, $parentId) {
+        foreach ($children as $c) {
+            $this->menuItems[$parentId]['children'][$c->id] = $c;
+            $this->__getMenueHeirarchy($c->childMenus, $c->id);
+        }
+    }
+
 }
